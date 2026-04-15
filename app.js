@@ -210,6 +210,14 @@ function handlePointerMove(pt) {
     state.previewLine = { x1: state.startPoint.x, y1: state.startPoint.y, x2: snapped.x, y2: snapped.y, color: '#00b4d8' };
     const len = lineLength(state.previewLine);
     document.getElementById('line-info').textContent = len.toFixed(1) + ' mm';
+  if (state.currentTool === 'circle') {
+    handleCircleTool(e);
+  }
+
+  if (state.currentTool === 'arc') {
+    handleArcTool(e);
+  }
+
   } else if (state.currentTool === 'rect') {
     state.previewLine = {
       type: 'rect',
@@ -705,3 +713,176 @@ function showToast(msg) {
 
 // =================== START ===================
 document.addEventListener('DOMContentLoaded', init);
+
+// ================== HERRAJES LIBRARY ==================
+const herrajesLibrary = {
+  tapalpa: { width: 100, height: 50, name: 'Tapalpa' },
+  ryobi: { width: 80, height: 40, name: 'RYOBI' },
+  brk714: { width: 90, height: 45, name: 'BRK714' },
+  perfil1992: { width: 120, height: 30, name: 'Perfil 1992' }
+};
+
+function insertHerraje(type) {
+  const herraje = herrajesLibrary[type];
+  if (!herraje) return;
+  
+  const cx = canvas.width / 2;
+  const cy = canvas.height / 2;
+  const wc = worldToCanvas(cx, cy);
+  
+  state.shapes.push({
+    type: 'herraje',
+    herrajeType: type,
+    x: wc.x,
+    y: wc.y,
+    width: herraje.width,
+    height: herraje.height,
+    name: herraje.name
+  });
+  
+  saveToLocalStorage();
+  render();
+  showToast(`Herraje ${herraje.name} insertado`);
+}
+
+// ================== CIRCLE & ARC TOOLS ==================
+function handleCircleTool(e) {
+  const { wx, wy } = getCanvasCoords(e);
+  
+  if (!state.tempShape) {
+    state.tempShape = { type: 'circle', cx: wx, cy: wy, radius: 0 };
+  } else {
+    const dx = wx - state.tempShape.cx;
+    const dy = wy - state.tempShape.cy;
+    const radius = Math.sqrt(dx*dx + dy*dy);
+    
+    state.shapes.push({
+      type: 'circle',
+      cx: state.tempShape.cx,
+      cy: state.tempShape.cy,
+      radius: radius
+    });
+    
+    state.tempShape = null;
+    saveToLocalStorage();
+  }
+  render();
+}
+
+function handleArcTool(e) {
+  const { wx, wy } = getCanvasCoords(e);
+  
+  if (!state.tempShape) {
+    state.tempShape = { type: 'arc', cx: wx, cy: wy };
+  } else if (!state.tempShape.radius) {
+    const dx = wx - state.tempShape.cx;
+    const dy = wy - state.tempShape.cy;
+    state.tempShape.radius = Math.sqrt(dx*dx + dy*dy);
+    state.tempShape.startAngle = Math.atan2(dy, dx);
+  } else {
+    const dx = wx - state.tempShape.cx;
+    const dy = wy - state.tempShape.cy;
+    state.tempShape.endAngle = Math.atan2(dy, dx);
+    
+    state.shapes.push({
+      type: 'arc',
+      cx: state.tempShape.cx,
+      cy: state.tempShape.cy,
+      radius: state.tempShape.radius,
+      startAngle: state.tempShape.startAngle,
+      endAngle: state.tempShape.endAngle
+    });
+    
+    state.tempShape = null;
+    saveToLocalStorage();
+  }
+  render();
+}
+
+// ================== TEMPLATES ==================
+const templates = {
+  ventanaCorrediza: [
+    { type: 'rect', x: 0, y: 0, width: 1200, height: 1500 },
+    { type: 'line', x1: 600, y1: 0, x2: 600, y2: 1500 },
+    { type: 'herraje', herrajeType: 'ryobi', x: 100, y: 100, width: 80, height: 40, name: 'RYOBI' }
+  ],
+  puertaBatiente: [
+    { type: 'rect', x: 0, y: 0, width: 900, height: 2100 },
+    { type: 'herraje', herrajeType: 'tapalpa', x: 50, y: 1050, width: 100, height: 50, name: 'Tapalpa' }
+  ],
+  mampara: [
+    { type: 'rect', x: 0, y: 0, width: 800, height: 2000 },
+    { type: 'circle', cx: 400, cy: 1000, radius: 50 }
+  ]
+};
+
+function insertTemplate(templateName) {
+  const template = templates[templateName];
+  if (!template) {
+    showToast('Plantilla no encontrada');
+    return;
+  }
+  
+  if (confirm('¿Limpiar diseño actual y cargar plantilla?')) {
+    state.shapes = JSON.parse(JSON.stringify(template));
+    saveToLocalStorage();
+    render();
+    showToast(`Plantilla "${templateName}" cargada`);
+  }
+}
+
+// ================== MENUS ==================
+function showHerrajeMenu() {
+  const menu = document.createElement('div');
+  menu.style.cssText = `
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #1e293b;
+    border: 2px solid #3b82f6;
+    border-radius: 8px;
+    padding: 20px;
+    z-index: 10000;
+  `;
+  
+  menu.innerHTML = `
+    <h3 style="color: #60a5fa; margin: 0 0 15px 0;">Biblioteca de Herrajes</h3>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+      <button onclick="insertHerraje('tapalpa'); this.parentElement.parentElement.remove()" style="padding: 10px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer;">Tapalpa</button>
+      <button onclick="insertHerraje('ryobi'); this.parentElement.parentElement.remove()" style="padding: 10px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer;">RYOBI</button>
+      <button onclick="insertHerraje('brk714'); this.parentElement.parentElement.remove()" style="padding: 10px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer;">BRK714</button>
+      <button onclick="insertHerraje('perfil1992'); this.parentElement.parentElement.remove()" style="padding: 10px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer;">Perfil 1992</button>
+    </div>
+    <button onclick="this.parentElement.remove()" style="margin-top: 15px; width: 100%; padding: 10px; background: #475569; color: white; border: none; border-radius: 4px; cursor: pointer;">Cancelar</button>
+  `;
+  
+  document.body.appendChild(menu);
+}
+
+function showTemplateMenu() {
+  const menu = document.createElement('div');
+  menu.style.cssText = `
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #1e293b;
+    border: 2px solid #3b82f6;
+    border-radius: 8px;
+    padding: 20px;
+    z-index: 10000;
+  `;
+  
+  menu.innerHTML = `
+    <h3 style="color: #60a5fa; margin: 0 0 15px 0;">Plantillas</h3>
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <button onclick="insertTemplate('ventanaCorrediza'); this.parentElement.parentElement.remove()" style="padding: 10px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer;">Ventana Corrediza</button>
+      <button onclick="insertTemplate('puertaBatiente'); this.parentElement.parentElement.remove()" style="padding: 10px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer;">Puerta Batiente</button>
+      <button onclick="insertTemplate('mampara'); this.parentElement.parentElement.remove()" style="padding: 10px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer;">Mampara</button>
+    </div>
+    <button onclick="this.parentElement.remove()" style="margin-top: 15px; width: 100%; padding: 10px; background: #475569; color: white; border: none; border-radius: 4px; cursor: pointer;">Cancelar</button>
+  `;
+  
+  document.body.appendChild(menu);
+}
