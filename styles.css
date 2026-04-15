@@ -1,0 +1,282 @@
+/* Cristal Templado CAD - styles.css */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0f0f1a;
+  --surface: #1a1a2e;
+  --surface2: #16213e;
+  --accent: #0f3460;
+  --blue: #00b4d8;
+  --blue2: #90e0ef;
+  --green: #06d6a0;
+  --red: #ef233c;
+  --yellow: #f8961e;
+  --text: #e0e0f0;
+  --text2: #8888aa;
+  --border: #2a2a4a;
+  --toolbar-h: 64px;
+  --header-h: 52px;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+}
+
+/* Header */
+#header {
+  height: var(--header-h);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+#title-area {
+  display: flex;
+  flex-direction: column;
+}
+
+#app-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--blue);
+  letter-spacing: 0.5px;
+}
+
+#line-info {
+  font-size: 11px;
+  color: var(--green);
+  min-height: 14px;
+}
+
+#header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+#header-actions button {
+  background: var(--accent);
+  border: 1px solid var(--border);
+  color: var(--text);
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+#header-actions button:active { background: var(--blue); }
+
+/* Canvas */
+#canvas-container {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  background: var(--bg);
+  cursor: crosshair;
+}
+
+#canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
+
+/* Toolbar */
+#toolbar {
+  height: var(--toolbar-h);
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  flex-shrink: 0;
+  padding: 0 4px;
+}
+
+.tool-btn {
+  background: transparent;
+  border: 2px solid transparent;
+  color: var(--text2);
+  border-radius: 12px;
+  padding: 6px 12px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-width: 52px;
+  transition: all 0.15s;
+  font-size: 11px;
+}
+
+.tool-btn svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.tool-btn:active, .tool-btn.active {
+  background: var(--accent);
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
+.tool-btn.active svg { stroke: var(--blue); }
+
+/* Panel flotante */
+#panel {
+  position: fixed;
+  top: var(--header-h);
+  right: 0;
+  width: min(320px, 100vw);
+  background: var(--surface2);
+  border-left: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  border-radius: 0 0 0 16px;
+  z-index: 100;
+  box-shadow: -4px 4px 24px rgba(0,0,0,0.5);
+  transform: translateX(100%);
+  transition: transform 0.25s ease;
+}
+
+#panel:not(.hidden) { transform: translateX(0); }
+#panel.hidden { transform: translateX(100%); }
+
+#panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  font-weight: 600;
+  color: var(--blue2);
+}
+
+#btn-close-panel {
+  background: none;
+  border: none;
+  color: var(--text2);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px;
+}
+
+#panel-body {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.panel-btn {
+  background: var(--accent);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+  font-size: 13px;
+  transition: background 0.15s;
+}
+
+.panel-btn:active { background: var(--blue); color: #fff; }
+
+#panel-body hr { border-color: var(--border); margin: 4px 0; }
+
+.project-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.project-item button {
+  background: none;
+  border: none;
+  color: var(--text2);
+  cursor: pointer;
+  font-size: 13px;
+  padding: 2px 6px;
+}
+
+.project-item button:hover { color: var(--red); }
+.project-item .load-btn { color: var(--blue2); }
+
+/* Toast */
+#toast {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--surface);
+  border: 1px solid var(--blue);
+  color: var(--text);
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: 13px;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s;
+  white-space: nowrap;
+  z-index: 200;
+}
+
+#toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Animacion play overlay */
+#anim-bar {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(15,15,26,0.85);
+  border: 1px solid var(--blue);
+  border-radius: 20px;
+  padding: 6px 16px;
+  font-size: 12px;
+  color: var(--blue2);
+  pointer-events: none;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--surface); }
+::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
